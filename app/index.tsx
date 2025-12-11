@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Pressable,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLinkStore } from "../lib/store";
 import { extractDomain, isParsableUrlOrDomain, normalizeUrl } from "../lib/utils";
@@ -66,7 +66,14 @@ export default function IndexScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.background }}>
       <View style={{ padding: 12, gap: 8, backgroundColor: t.surface }}>
-        <Text style={{ color: t.onSurface, fontSize: 20, fontWeight: "700" }}>Domains</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={{ color: t.onSurface, fontSize: 20, fontWeight: "700" }}>Domains</Text>
+          <Link href="/settings" asChild>
+            <TouchableOpacity accessibilityLabel="Settings" style={{ padding: 8 }}>
+              <Text style={{ fontSize: 20, color: t.onSurface }}>⚙️</Text>
+            </TouchableOpacity>
+          </Link>
+        </View>
 
         {/* Search with clear (×) */}
         <View style={{ position: "relative" }}>

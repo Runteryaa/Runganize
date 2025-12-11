@@ -20,8 +20,15 @@ export type LinkRow = {
 
 type AddMetaOpts = { lockTitle?: boolean };
 
+export type AppSettings = {
+  theme: "light" | "dark" | "system";
+  themeColor: "auto" | string;
+  shareAction: "open" | "notification";
+};
+
 type LinkStore = {
   links: LinkRow[];
+  settings: AppSettings;
   addLink: (url: string, hintTitle?: string | null, opts?: AddMetaOpts) => string;
   addLinkWithMeta: (url: string, hintTitle?: string | null, opts?: AddMetaOpts) => Promise<string>;
   updateLink: (id: string, patch: Partial<LinkRow>) => void;
@@ -29,12 +36,18 @@ type LinkStore = {
   clearAll: () => void;
   renameDomain: (oldDomain: string, newDomain: string) => void;
   refetchMeta: (id: string) => Promise<void>;
+  updateSettings: (patch: Partial<AppSettings>) => void;
 };
 
 export const useLinkStore = create<LinkStore>()(
   persist(
     (set, get) => ({
       links: [],
+      settings: {
+        theme: "system",
+        themeColor: "auto",
+        shareAction: "open",
+      },
 
       addLink: (url, hintTitle, opts) => {
         const id = String(uuid.v4());
@@ -103,10 +116,13 @@ export const useLinkStore = create<LinkStore>()(
           });
         } catch {}
       },
+
+      updateSettings: (patch) =>
+        set({ settings: { ...get().settings, ...patch } }),
     }),
     {
       name: "link-categorizer-store",
-      version: 3,
+      version: 5,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: async (state: any, version) => {
         if (version < 3 && state?.state?.links) {
@@ -114,6 +130,19 @@ export const useLinkStore = create<LinkStore>()(
             lockedTitle: !!l.lockedTitle,
             ...l,
           }));
+        }
+        if (version < 4) {
+          state.state.settings = {
+            theme: "system",
+            themeColor: "auto",
+            shareAction: "open",
+          };
+        }
+        if (version < 5) {
+          state.state.settings = {
+            ...state.state.settings,
+            themeColor: "auto",
+          };
         }
         return state;
       },
