@@ -1,7 +1,7 @@
 // app/_layout.tsx
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { Platform, StatusBar } from "react-native";
+import { Platform, StatusBar, BackHandler, ToastAndroid, Alert } from "react-native";
 import * as Linking from "expo-linking";
 import { ShareIntentProvider, useShareIntentContext } from "expo-share-intent";
 import * as Notifications from "expo-notifications";
@@ -37,13 +37,31 @@ function ShareIntentBridge() {
 
            if (shareAction === 'notification') {
              // Show notification
-             await Notifications.scheduleNotificationAsync({
-               content: {
-                 title: "Link saved",
-                 body: cand,
-               },
-               trigger: null, // immediate
-             });
+             const { status } = await Notifications.getPermissionsAsync();
+             if (status === 'granted') {
+                 await Notifications.scheduleNotificationAsync({
+                   content: {
+                     title: "Link saved",
+                     body: cand,
+                   },
+                   trigger: null, // immediate
+                 });
+             } else {
+                 // Fallback if no permission
+                 if (Platform.OS === 'android') {
+                     ToastAndroid.show('Link saved', ToastAndroid.SHORT);
+                 } else {
+                     Alert.alert("Link saved");
+                 }
+             }
+
+             // Minimize/Close on Android
+             if (Platform.OS === 'android') {
+                 // Give a small delay for the notification to be processed/shown
+                 setTimeout(() => {
+                     BackHandler.exitApp();
+                 }, 500);
+             }
            } else {
              // Open (Navigate)
              const domain = extractDomain(cand);
