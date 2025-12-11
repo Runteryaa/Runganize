@@ -51,9 +51,17 @@
       [
         "expo-share-intent",
         {
-          "androidIntentFilters": ["text/*", "text/uri-list"]
+          "androidIntentFilters": [
+            "text/*",
+            "text/uri-list"
+          ]
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-audio",
+      "expo-font",
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

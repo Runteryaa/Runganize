@@ -66,7 +66,12 @@ export default function IndexScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.background }}>
       <View style={{ padding: 12, gap: 8, backgroundColor: t.surface }}>
-        <Text style={{ color: t.onSurface, fontSize: 20, fontWeight: "700" }}>Domains</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={{ color: t.onSurface, fontSize: 20, fontWeight: "700" }}>Domains</Text>
+          <TouchableOpacity onPress={() => router.push("/settings")} style={{ padding: 8 }}>
+            <Text style={{ fontSize: 20, color: t.onSurface }}>⚙️</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Search with clear (×) */}
         <View style={{ position: "relative" }}>

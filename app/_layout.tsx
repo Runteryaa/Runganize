@@ -1,17 +1,28 @@
 // app/_layout.tsx
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Platform, StatusBar } from "react-native";
 import * as Linking from "expo-linking";
 import { ShareIntentProvider, useShareIntentContext } from "expo-share-intent";
+import * as Notifications from "expo-notifications";
 
 import { useLinkStore } from "../lib/store";
-import { isParsableUrlOrDomain } from "../lib/utils";
+import { extractDomain, isParsableUrlOrDomain } from "../lib/utils";
 import { ThemeProvider, defaultThemeProviderProps, useMaterialYouTheme } from "../lib/theme";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 function ShareIntentBridge() {
   const addLinkWithMeta = useLinkStore((s) => s.addLinkWithMeta);
+  const shareAction = useLinkStore((s) => s.settings.shareAction);
   const { hasShareIntent, shareIntent, resetShareIntent, error } = useShareIntentContext();
+  const router = useRouter();
 
   useEffect(() => {
     if (!hasShareIntent) return;
@@ -20,12 +31,31 @@ function ShareIntentBridge() {
         const cand =
           shareIntent.webUrl ??
           (shareIntent.text && isParsableUrlOrDomain(shareIntent.text) ? shareIntent.text : null);
-        if (cand) await addLinkWithMeta(cand, shareIntent.meta?.title ?? null, { lockTitle: false });
+
+        if (cand) {
+           await addLinkWithMeta(cand, shareIntent.meta?.title ?? null, { lockTitle: false });
+
+           if (shareAction === 'notification') {
+             // Show notification
+             await Notifications.scheduleNotificationAsync({
+               content: {
+                 title: "Link saved",
+                 body: cand,
+               },
+               trigger: null, // immediate
+             });
+           } else {
+             // Open (Navigate)
+             const domain = extractDomain(cand);
+             // Use replace to avoid stacking too many if reused
+             router.replace({ pathname: "/domain/[name]", params: { name: domain } });
+           }
+        }
       } finally {
         resetShareIntent();
       }
     })();
-  }, [hasShareIntent, shareIntent, addLinkWithMeta, resetShareIntent]);
+  }, [hasShareIntent, shareIntent, addLinkWithMeta, resetShareIntent, shareAction, router]);
 
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
@@ -34,6 +64,9 @@ function ShareIntentBridge() {
         const u = parsed?.queryParams?.url ? String(parsed.queryParams.url) : "";
         if (parsed?.path === "add" && isParsableUrlOrDomain(u)) {
           await addLinkWithMeta(u, undefined, { lockTitle: false });
+          // For deep links, we probably always want to navigate or at least refresh?
+          // Defaulting to same behavior as share intent for consistency?
+          // Or deep links are explicit user actions to open app, so maybe just open.
         }
       } catch (e) {
         console.warn("Deep link parse error:", e);
@@ -60,28 +93,46 @@ function WithStatusBar() {
   return <StatusBar barStyle={theme.isDark ? "light-content" : "dark-content"} />;
 }
 
+function Root() {
+    const themeSetting = useLinkStore(s => s.settings.theme);
+    const themeProps = {
+        ...defaultThemeProviderProps,
+        colorScheme: themeSetting === 'system' ? 'auto' : themeSetting,
+    } as const;
+
+    return (
+        <ThemeProvider {...themeProps}>
+          <WithStatusBar />
+          <ShareIntentProvider>
+            <ShareIntentBridge />
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: "transparent" },
+                headerTintColor: undefined,
+                contentStyle: { backgroundColor: "transparent" },
+                animation: Platform.select({ ios: "default", android: "slide_from_right" }),
+                header: () => null,
+              }}
+            >
+              <Stack.Screen name="index" options={{ title: "Domains" }} />
+              <Stack.Screen
+                name="domain/[name]"
+                options={({ route }: any) => ({ title: route?.params?.name ?? "Links" })}
+              />
+               <Stack.Screen
+                name="settings"
+                options={{ title: "Settings", presentation: 'modal' }}
+              />
+            </Stack>
+          </ShareIntentProvider>
+        </ThemeProvider>
+      );
+}
+
 export default function RootLayout() {
-  return (
-    <ThemeProvider {...defaultThemeProviderProps}>
-      <WithStatusBar />
-      <ShareIntentProvider>
-        <ShareIntentBridge />
-        <Stack
-          screenOptions={{
-            headerStyle: { backgroundColor: "transparent" },
-            headerTintColor: undefined,
-            contentStyle: { backgroundColor: "transparent" },
-            animation: Platform.select({ ios: "default", android: "slide_from_right" }),
-            header: () => null,
-          }}
-        >
-          <Stack.Screen name="index" options={{ title: "Domains" }} />
-          <Stack.Screen
-            name="domain/[name]"
-            options={({ route }: any) => ({ title: route?.params?.name ?? "Links" })}
-          />
-        </Stack>
-      </ShareIntentProvider>
-    </ThemeProvider>
-  );
+    // We need to access store inside, so we need a component that is child of nothing?
+    // Actually store is external, so we can use it.
+    // However, store is not a provider, it's a hook.
+    // So we can just use `useLinkStore` here.
+    return <Root />;
 }

@@ -1,0 +1,14 @@
+Starting project at /app
+React Compiler enabled
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 2617ms node_modules/expo-router/node/render.js (813 modules)
+[expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.
+λ  LOG  "Material You" is not supported on this device, A fallback palette has been generated using the seed color "#3b82f6" .
+λ  WARN  props.pointerEvents is deprecated. Use style.pointerEvents
+"shadow*" style props are deprecated. Use "boxShadow".
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (922/922)
+Web Bundled 4091ms node_modules/expo-router/entry.js (922 modules)
+Web Bundled 903ms node_modules/expo-router/entry.js (923 modules)
