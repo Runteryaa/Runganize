@@ -100,6 +100,8 @@ function Root() {
         colorScheme: themeSetting === 'system' ? 'auto' : themeSetting,
     } as const;
 
+    console.log("Root re-render. Theme Setting:", themeSetting, "Color Scheme:", themeProps.colorScheme);
+
     return (
         <ThemeProvider {...themeProps}>
           <WithStatusBar />
@@ -121,7 +123,10 @@ function Root() {
               />
                <Stack.Screen
                 name="settings"
-                options={{ title: "Settings", presentation: 'modal' }}
+                options={{
+                    title: "Settings",
+                    presentation: Platform.OS === 'web' ? 'card' : 'modal'
+                }}
               />
             </Stack>
           </ShareIntentProvider>
