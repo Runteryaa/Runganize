@@ -95,12 +95,15 @@ function WithStatusBar() {
 
 function Root() {
     const themeSetting = useLinkStore(s => s.settings.theme);
+    const themeColor = useLinkStore(s => s.settings.themeColor);
+
     const themeProps = {
         ...defaultThemeProviderProps,
         colorScheme: themeSetting === 'system' ? 'auto' : themeSetting,
+        seedColor: themeColor === 'auto' ? 'auto' : themeColor,
     } as const;
 
-    console.log("Root re-render. Theme Setting:", themeSetting, "Color Scheme:", themeProps.colorScheme);
+    console.log("Root re-render. Theme Setting:", themeSetting, "Theme Color:", themeColor);
 
     return (
         <ThemeProvider {...themeProps}>

@@ -81,6 +81,41 @@ export default function SettingsScreen() {
     );
   };
 
+  const ColorOption = ({ color, selected, onSelect }: { color: string, selected: boolean, onSelect: () => void }) => (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={onSelect}
+        accessibilityLabel={color === 'auto' ? 'Auto Color' : `Color ${color}`}
+        style={{
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: color === 'auto' ? t.surfaceVariant : color,
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderWidth: selected ? 3 : 1,
+            borderColor: selected ? t.onSurface : t.outline,
+        }}
+      >
+          {color === 'auto' && (
+              <Text style={{ fontSize: 20 }}>🎨</Text>
+          )}
+          {selected && (
+               <Text style={{ color: color === 'auto' ? t.onSurface : '#fff', fontWeight: 'bold' }}>✓</Text>
+          )}
+      </TouchableOpacity>
+  );
+
+  const colors = [
+      { label: "Wallpaper", value: "auto" },
+      { label: "Blue", value: "#3b82f6" },
+      { label: "Green", value: "#22c55e" },
+      { label: "Purple", value: "#a855f7" },
+      { label: "Orange", value: "#f97316" },
+      { label: "Pink", value: "#ec4899" },
+      { label: "Red", value: "#ef4444" },
+  ];
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: t.background }} edges={['bottom', 'left', 'right']}>
       {/* Header */}
@@ -122,6 +157,23 @@ export default function SettingsScreen() {
               current={settings.theme}
               onSelect={(v) => updateSettings({ theme: v })}
             />
+        </View>
+
+        <SectionHeader title="Theme Color" />
+        <View style={{ backgroundColor: t.surface, padding: 16 }}>
+            <Text style={{ color: t.muted, marginBottom: 12 }}>
+                Pick a seed color for Material You. "Wallpaper" uses system colors (Android 12+).
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
+                {colors.map(c => (
+                    <ColorOption
+                        key={c.value}
+                        color={c.value}
+                        selected={settings.themeColor === c.value}
+                        onSelect={() => updateSettings({ themeColor: c.value })}
+                    />
+                ))}
+            </View>
         </View>
 
         <SectionHeader title="Share Behavior" />

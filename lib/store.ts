@@ -22,6 +22,7 @@ type AddMetaOpts = { lockTitle?: boolean };
 
 export type AppSettings = {
   theme: "light" | "dark" | "system";
+  themeColor: "auto" | string;
   shareAction: "open" | "notification";
 };
 
@@ -44,6 +45,7 @@ export const useLinkStore = create<LinkStore>()(
       links: [],
       settings: {
         theme: "system",
+        themeColor: "auto",
         shareAction: "open",
       },
 
@@ -120,7 +122,7 @@ export const useLinkStore = create<LinkStore>()(
     }),
     {
       name: "link-categorizer-store",
-      version: 4,
+      version: 5,
       storage: createJSONStorage(() => AsyncStorage),
       migrate: async (state: any, version) => {
         if (version < 3 && state?.state?.links) {
@@ -132,7 +134,14 @@ export const useLinkStore = create<LinkStore>()(
         if (version < 4) {
           state.state.settings = {
             theme: "system",
+            themeColor: "auto",
             shareAction: "open",
+          };
+        }
+        if (version < 5) {
+          state.state.settings = {
+            ...state.state.settings,
+            themeColor: "auto",
           };
         }
         return state;
