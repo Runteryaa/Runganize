@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Linking } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLinkStore } from "../lib/store";
@@ -194,6 +194,41 @@ export default function SettingsScreen() {
         <Text style={{ padding: 16, color: t.muted, fontSize: 12 }}>
             &quot;Notification Only&quot; will still open the app briefly to process the link, but will show a notification instead of navigating to the link details.
         </Text>
+
+        <SectionHeader title="About" />
+        <View style={{ backgroundColor: t.surface, marginBottom: 20 }}>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://github.com/Runteryaa/Runganize')}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 14,
+                  paddingHorizontal: 16,
+                  borderBottomWidth: 1,
+                  borderBottomColor: t.divider,
+                }}
+            >
+                <Text style={{ color: t.onSurface, fontSize: 16 }}>GitHub Repository</Text>
+                <Text style={{ color: t.muted, fontSize: 16 }}>↗</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => Linking.openURL('https://buymeacoffee.com/runterya')}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 14,
+                  paddingHorizontal: 16,
+                }}
+            >
+                <Text style={{ color: t.onSurface, fontSize: 16 }}>Buy Me a Coffee</Text>
+                <Text style={{ color: t.muted, fontSize: 16 }}>↗</Text>
+            </TouchableOpacity>
+        </View>
 
       </ScrollView>
     </SafeAreaView>
