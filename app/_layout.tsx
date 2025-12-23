@@ -19,7 +19,8 @@ Notifications.setNotificationHandler({
 });
 
 function ShareIntentBridge() {
-  const addLinkWithMeta = useLinkStore((s) => s.addLinkWithMeta);
+  const addLink = useLinkStore((s) => s.addLink);
+  const refetchMeta = useLinkStore((s) => s.refetchMeta);
   const shareAction = useLinkStore((s) => s.settings.shareAction);
   const { hasShareIntent, shareIntent, resetShareIntent, error } = useShareIntentContext();
   const router = useRouter();
@@ -33,7 +34,10 @@ function ShareIntentBridge() {
           (shareIntent.text && isParsableUrlOrDomain(shareIntent.text) ? shareIntent.text : null);
 
         if (cand) {
-           await addLinkWithMeta(cand, shareIntent.meta?.title ?? null, { lockTitle: false });
+           // Add link immediately (synchronous)
+           const id = addLink(cand, shareIntent.meta?.title ?? null, { lockTitle: false });
+           // Trigger meta fetch in background (do not await)
+           refetchMeta(id);
 
            if (shareAction === 'notification') {
              // Show notification
@@ -73,7 +77,7 @@ function ShareIntentBridge() {
         resetShareIntent();
       }
     })();
-  }, [hasShareIntent, shareIntent, addLinkWithMeta, resetShareIntent, shareAction, router]);
+  }, [hasShareIntent, shareIntent, addLink, refetchMeta, resetShareIntent, shareAction, router]);
 
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
@@ -81,10 +85,8 @@ function ShareIntentBridge() {
         const parsed = Linking.parse(url);
         const u = parsed?.queryParams?.url ? String(parsed.queryParams.url) : "";
         if (parsed?.path === "add" && isParsableUrlOrDomain(u)) {
-          await addLinkWithMeta(u, undefined, { lockTitle: false });
-          // For deep links, we probably always want to navigate or at least refresh?
-          // Defaulting to same behavior as share intent for consistency?
-          // Or deep links are explicit user actions to open app, so maybe just open.
+          const id = addLink(u, undefined, { lockTitle: false });
+          refetchMeta(id);
         }
       } catch (e) {
         console.warn("Deep link parse error:", e);
@@ -97,7 +99,7 @@ function ShareIntentBridge() {
     });
     const sub = Linking.addEventListener("url", handleUrl);
     return () => sub.remove();
-  }, [addLinkWithMeta]);
+  }, [addLink, refetchMeta]);
 
   useEffect(() => {
     if (error) console.warn("expo-share-intent error:", error);
